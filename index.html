@@ -1,11 +1,26 @@
-{% extends "base.jinja2" %}
-{% block content %}
-<style>
-    .label-white {
-        background-color: #d2d2e6;
-        color: #666;
-    }
-</style>
+<!doctype html>
+<meta charset="utf-8">
+<title>Loot-filter creator for &laquo;Path of Exile&raquo;</title>
+<link rel=stylesheet type=text/css href="/poe-loot-filter/libs/bootstrap-3.3.5-dist/css/bootstrap.min.css">
+<link rel=stylesheet type=text/css href="/poe-loot-filter/libs/ng-range-slider/default.css">
+<script type="text/javascript" src="/poe-loot-filter/libs/angular/angular.min.js"></script>
+<script type="text/javascript" src="/poe-loot-filter/libs/ui-bootstrap/ui-bootstrap-tpls-0.13.3.min.js"></script>
+<script type="text/javascript" src="/poe-loot-filter/libs/ng-range-slider/ng-range-slider.min.js"></script>
+<script type="text/javascript" src="/poe-loot-filter/js/main.js')"></script>
+
+<div class="container">
+    <div class="row" style="background-color: black; color: white">
+        <div class="col-xs-12">
+            <h1>Loot-filter creator for &laquo;Path of Exile&raquo;</h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+
+
+
+
+
 <div ng-controller="CreatorController">
     <div class="row" style="margin-top: 15px;">
     <div class="col-xs-6 col-sm-4 col-md-3">
@@ -74,7 +89,7 @@
                                 <label ng-hide="rule.anyclass">
                                     <input type="checkbox" ng-checked="has_class(rule, class)"
                                            ng-click="toggle_class(rule, class)" />
-                                    {{ '{{' }}class{{ '}}' }}
+                                    {{class}}
                                 </label>
                             </div>
                         </dd>
@@ -381,4 +396,16 @@
     </div>
 </div>
 
-{% endblock %}
+
+
+
+
+        </div>
+    </div>
+</div>
+<style>
+    .label-white {
+        background-color: #d2d2e6;
+        color: #666;
+    }
+</style>
