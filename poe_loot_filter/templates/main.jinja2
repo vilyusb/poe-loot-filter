@@ -1,0 +1,384 @@
+{% extends "base.jinja2" %}
+{% block content %}
+<style>
+    .label-white {
+        background-color: #d2d2e6;
+        color: #666;
+    }
+</style>
+<div ng-controller="CreatorController">
+    <div class="row" style="margin-top: 15px;">
+    <div class="col-xs-6 col-sm-4 col-md-3">
+        <button type="button" class="btn btn-default btn-sm" ng-click="add()">Add new rule</button>
+        <h3>Result</h3>
+        <pre ng-bind="result"></pre>
+        <button type="button" class="btn btn-success"
+                ng-click="download()">
+            <span class="glyphicon glyphicon-download"></span>
+            Download
+        </button>
+    </div>
+    <div class="col-xs-6 col-sm-8 col-md-9" style="max-height: 550px; overflow-y: auto">
+        <div class="well well-sm ng-cloak" ng-cloak ng-repeat="rule in rules" style="min-height: 43px">
+            <button type="button" class="btn btn-danger btn-xs pull-right"
+                    ng-click="rules.splice($index, 1)">
+                <span class="glyphicon glyphicon-remove"></span>
+                Remove the rule
+            </button>
+            <button type="button" class="btn btn-default btn-xs pull-right"
+                    ng-click="rule.hide = !rule.hide">
+                <span class="glyphicon" ng-class="'glyphicon-' + (rule.hide ? 'plus' : 'minus')"></span>
+                <span ng-bind="rule.hide ? 'Expand' : 'Minimize'"></span>
+            </button>
+            <button type="button" class="btn btn-default btn-xs pull-right"
+                    ng-click="move_up_rule(rule)" ng-hide="$first" title="Move up">
+                <span class="glyphicon glyphicon-chevron-up"></span>
+            </button>
+            <button type="button" class="btn btn-default btn-xs pull-right"
+                    ng-click="move_down_rule(rule)" ng-hide="$last" title="Move down">
+                <span class="glyphicon glyphicon-chevron-down"></span>
+            </button>
+            <span ng-show="rule.hide" ng-bind="(rule.hideshow|uppercase) + '...'"></span>
+            <div class="form-group" style="pointer-events: none" ng-hide="rule.hide">
+                <div class="radio">
+                    <label style="pointer-events: all">
+                        <input type="radio" ng-model="rule.hideshow" value="show" />
+                        Show
+                    </label>
+                </div>
+                <div class="radio">
+                    <label style="pointer-events: all">
+                        <input type="radio" ng-model="rule.hideshow" value="hide" />
+                        Hide
+                    </label>
+                </div>
+                <div class="radio" ng-show="(rule.hideshow === 'hideall') || (rules.length > 1 && $last)">
+                    <label style="pointer-events: all">
+                        <input type="radio" ng-model="rule.hideshow" value="hideall" />
+                        Hide everything else
+                    </label>
+                </div>
+            </div>
+            <div ng-hide="rule.hideshow === 'hideall' || (rule.hide)">
+                <div class="form-group">
+                    <dl class="dl-horizontal">
+                        <dt>Class</dt>
+                        <dd>
+                            <label class="checkbox-inline">
+                                <input type="checkbox" ng-model="rule.anyclass" />
+                                Any
+                            </label>
+                        </dd>
+                        <dd style="max-height: 200px; overflow-y: auto;">
+                            <div ng-repeat="class in classes">
+                                <label ng-hide="rule.anyclass">
+                                    <input type="checkbox" ng-checked="has_class(rule, class)"
+                                           ng-click="toggle_class(rule, class)" />
+                                    {{ '{{' }}class{{ '}}' }}
+                                </label>
+                            </div>
+                        </dd>
+                    </dl>
+                </div>
+                <div class="form-group">
+                    <dl class="dl-horizontal">
+                        <dt>Type (or part of name)</dt>
+                        <dd>
+                            <input type="text" ng-model="rule.basetype" />
+                        </dd>
+                    </dl>
+                    <div class="help-block">
+                        NB! Only latin letters and punctuation allowed:
+                        <a rel="nofollow" href="https://en.wikipedia.org/wiki/Windows-1252" target="_blank">more on wikipedia</a>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <dl class="dl-horizontal">
+                        <dt>Rarity</dt>
+                        <dd>
+                            <select ng-model="rule.rarity"
+                                    ng-options="rarity for rarity in rarities">
+                                <option value="">Any</option>
+                            </select>
+                        </dd>
+                    </dl>
+                </div>
+                <div class="form-group">
+                    <dl class="dl-horizontal">
+                        <dt>Socket group</dt>
+                        <dd>
+                            <button class="btn btn-xs btn-primary" type="button"
+                                    ng-hide="rule.socketgroup.length"
+                                    ng-click="edit_socket_group(rule)">add</button>
+                            <span ng-show="rule.socketgroup.length">
+                                <span ng-repeat="socket in rule.socketgroup  track by $index"
+                                      class="label"
+                                      ng-class="'label-' + ({red: 'danger', blue: 'primary', green: 'success', 'white': 'white'})[socket]"
+                                      ng-bind="socket"></span>
+                            </span>
+                            <button class="btn btn-xs btn-default" type="button"
+                                    ng-show="rule.socketgroup.length"
+                                    ng-click="edit_socket_group(rule)">edit</button>
+                        </dd>
+                    </dl>
+                    <div class="help-block" ng-show="rule.socketgroup.length">
+                        Item has linked sockets with specified colors
+                    </div>
+                </div>
+                <div class="form-group">
+                    <dl class="dl-horizontal">
+                        <dt>Quality</dt>
+                        <dd>
+                            <label class="checkbox-inline">
+                                <input type="checkbox" ng-click="rule.anyquality = !rule.anyquality"
+                                       ng-checked="rule.anyquality" />
+                                Any
+                            </label>
+                        </dd>
+                        <dd ng-hide="rule.anyquality">
+                            <span class="text-muted" ng-bind="fmt_range(rule.quality)"></span>
+                            <span range-slider class="range-slider" step="1"
+                                  ng-model="rule.quality" min="0" max="20"></span>
+                        </dd>
+                    </dl>
+                </div>
+                <div class="form-group">
+                    <dl class="dl-horizontal">
+                        <dt>Drop level</dt>
+                        <dd>
+                            <label class="checkbox-inline">
+                                <input type="checkbox" ng-click="rule.anydroplvl = !rule.anydroplvl"
+                                       ng-checked="rule.anydroplvl" />
+                                Any
+                            </label>
+                        </dd>
+                        <dd ng-hide="rule.anydroplvl">
+                            <span class="text-muted" ng-bind="fmt_range(rule.droplvl)"></span>
+                            <span range-slider class="range-slider" step="1"
+                                  ng-model="rule.droplvl" min="0" max="100"></span>
+                        </dd>
+                    </dl>
+                </div>
+                <div class="form-group">
+                    <dl class="dl-horizontal">
+                        <dt>Item level</dt>
+                        <dd>
+                            <label class="checkbox-inline">
+                                <input type="checkbox" ng-click="rule.anyitemlvl = !rule.anyitemlvl"
+                                       ng-checked="rule.anyitemlvl" />
+                                Any
+                            </label>
+                        </dd>
+                        <dd ng-hide="rule.anyitemlvl">
+                            <span class="text-muted" ng-bind="fmt_range(rule.itemlvl)"></span>
+                            <span range-slider class="range-slider" step="1"
+                                  ng-model="rule.itemlvl" min="0" max="100"></span>
+                        </dd>
+                    </dl>
+                </div>
+                <div class="form-group">
+                    <dl class="dl-horizontal">
+                        <dt>Sockets (total)</dt>
+                        <dd>
+                            <label class="checkbox-inline">
+                                <input type="checkbox" ng-click="rule.anysockets = !rule.anysockets"
+                                       ng-checked="rule.anysockets" />
+                                Any
+                            </label>
+                        </dd>
+                        <dd ng-hide="rule.anysockets">
+                            <span class="text-muted" ng-bind="fmt_range(rule.sockets)"></span>
+                            <span range-slider class="range-slider" step="1"
+                                  ng-model="rule.sockets" min="0" max="6"></span>
+                        </dd>
+                    </dl>
+                </div>
+                <div class="form-group">
+                    <dl class="dl-horizontal">
+                        <dt>Linked sockets</dt>
+                        <dd>
+                            <label class="checkbox-inline">
+                                <input type="checkbox" ng-click="rule.anylinkedsockets = !rule.anylinkedsockets"
+                                       ng-checked="rule.anylinkedsockets" />
+                                Any
+                            </label>
+                        </dd>
+                        <dd ng-hide="rule.anylinkedsockets">
+                            <span class="text-muted" ng-bind="fmt_range(rule.linkedsockets)"></span>
+                            <span range-slider class="range-slider" step="1"
+                                  ng-model="rule.linkedsockets" min="0" max="6"></span>
+                        </dd>
+                    </dl>
+                </div>
+                <div class="form-group">
+                    <dl class="dl-horizontal">
+                        <dt>Height (inventory)</dt>
+                        <dd>
+                            <label class="checkbox-inline">
+                                <input type="checkbox" ng-click="rule.anyheight = !rule.anyheight"
+                                       ng-checked="rule.anyheight" />
+                                Any
+                            </label>
+                        </dd>
+                        <dd ng-hide="rule.anyheight">
+                            <span class="text-muted" ng-bind="fmt_range(rule.height)"></span>
+                            <span range-slider class="range-slider" step="1"
+                                  ng-model="rule.height" min="1" max="4"></span>
+                        </dd>
+                    </dl>
+                </div>
+                <div class="form-group">
+                    <dl class="dl-horizontal">
+                        <dt>Width (inventory)</dt>
+                        <dd>
+                            <label class="checkbox-inline">
+                                <input type="checkbox" ng-click="rule.anywidth = !rule.anywidth"
+                                       ng-checked="rule.anywidth" />
+                                Any
+                            </label>
+                        </dd>
+                        <dd ng-hide="rule.anywidth">
+                            <span class="text-muted" ng-bind="fmt_range(rule.width)"></span>
+                            <span range-slider class="range-slider" step="1"
+                                  ng-model="rule.width" min="1" max="2"></span>
+                        </dd>
+                    </dl>
+                </div>
+                <h3>Actions and appearance</h3>
+                <div class="form-group">
+                    <dl class="dl-horizontal">
+                        <dt>Item label</dt>
+                        <dd>
+                            <label class="checkbox-inline">
+                                <input type="checkbox" ng-model="rule.anylabel" />
+                                Default
+                            </label>
+                        </dd>
+                        <dd ng-hide="rule.anylabel">
+                            <br />
+                            <span style="background-image: url('{{ url_for('static', filename='bg.png') }}'); padding: 10px;">
+                            <span class="label-example"
+                                  ng-style="{
+                                      border: '1px solid ' + get_color(rule.label.border),
+                                      color: get_color(rule.label.textcolor),
+                                      'font-size': get_size(rule.label.size),
+                                      'background-color': get_color(rule.label.bg)
+                                  }">
+                                Scroll of Wisdom
+                            </span>
+                            </span>
+                            <h5 ng-click="rule.showbg = !rule.showbg" style="cursor: pointer" class="text-info">
+                                <span class="glyphicon glyphicon-edit"></span>
+                                Background color
+                            </h5>
+                            <div ng-show="rule.showbg">
+                                <label>
+                                    R
+                                    <input type="range" ng-model="rule.label.bg.r" min="0" max="255" />
+                                </label>
+                                <label>
+                                    G
+                                    <input type="range" ng-model="rule.label.bg.g" min="0" max="255" />
+                                </label>
+                                <label>
+                                    B
+                                    <input type="range" ng-model="rule.label.bg.b" min="0" max="255" />
+                                </label>
+                                <label>
+                                    A
+                                    <input type="range" ng-model="rule.label.bg.a" min="0" max="255" />
+                                </label>
+                            </div>
+                            <h5 ng-click="rule.showtextcolor = !rule.showtextcolor" style="cursor: pointer" class="text-info">
+                                <span class="glyphicon glyphicon-edit"></span>
+                                Text color
+                            </h5>
+                            <div ng-show="rule.showtextcolor">
+                                <label>
+                                    R
+                                    <input type="range" ng-model="rule.label.textcolor.r" min="0" max="255" />
+                                </label>
+                                <label>
+                                    G
+                                    <input type="range" ng-model="rule.label.textcolor.g" min="0" max="255" />
+                                </label>
+                                <label>
+                                    B
+                                    <input type="range" ng-model="rule.label.textcolor.b" min="0" max="255" />
+                                </label>
+                                <label>
+                                    A
+                                    <input type="range" ng-model="rule.label.textcolor.a" min="0" max="255" />
+                                </label>
+                            </div>
+                            <h5 ng-click="rule.showborder = !rule.showborder" style="cursor: pointer" class="text-info">
+                                <span class="glyphicon glyphicon-edit"></span>
+                                Border color
+                            </h5>
+                            <div ng-show="rule.showborder">
+                                <label>
+                                    R
+                                    <input type="range" ng-model="rule.label.border.r" min="0" max="255" />
+                                </label>
+                                <label>
+                                    G
+                                    <input type="range" ng-model="rule.label.border.g" min="0" max="255" />
+                                </label>
+                                <label>
+                                    B
+                                    <input type="range" ng-model="rule.label.border.b" min="0" max="255" />
+                                </label>
+                                <label>
+                                    A
+                                    <input type="range" ng-model="rule.label.border.a" min="0" max="255" />
+                                </label>
+                            </div>
+                            <h5>Font size</h5>
+                            <label>
+                                <input type="range" ng-model="rule.label.size" min="18" max="45" />
+                            </label>
+                        </dd>
+                    </dl>
+                </div>
+
+                <div class="form-group">
+                    <dl class="dl-horizontal">
+                        <dt>Play sound</dt>
+                        <dd>
+                            <label class="checkbox-inline">
+                                <input type="checkbox" ng-model="rule.nosound" />
+                                No
+                            </label>
+                        </dd>
+                        <dd ng-hide="rule.nosound">
+                            <select ng-model="rule.sound">
+                                <option value="1">Sound #1</option>
+                                <option value="2">Sound #2</option>
+                                <option value="3">Sound #3</option>
+                                <option value="4">Sound #4</option>
+                                <option value="5">Sound #5</option>
+                                <option value="6">Sound #6</option>
+                                <option value="7">Sound #7</option>
+                                <option value="8">Sound #8</option>
+                                <option value="9">Sound #9</option>
+                            </select><br />
+                            <label class="checkbox-inline">
+                                <input type="checkbox" ng-model="rule.setvolume" />
+                                Volume
+                            </label>
+                            <input type="range" min="0" max="300" ng-model="rule.volume" ng-show="rule.setvolume" />
+                        </dd>
+                    </dl>
+                    <div class="help-block" ng-hide="rule.nosound">
+                        You can hear sounds
+                        <a href="https://youtu.be/cHUJUygz-l8" target="_blank">here on YouTube</a>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+    </div>
+    </div>
+</div>
+
+{% endblock %}
