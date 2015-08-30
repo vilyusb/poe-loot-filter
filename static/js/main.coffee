@@ -286,7 +286,7 @@ app.controller 'CreatorController', ['$scope', '$modal', ($scope, $modal) ->
     a.click()
     window.URL.revokeObjectURL url
     document.body.removeChild a
-
+    return true
 ]
 
 $(document).ready ->

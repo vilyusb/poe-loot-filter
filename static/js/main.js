@@ -330,7 +330,8 @@
         a.download = 'loot-filter.filter';
         a.click();
         window.URL.revokeObjectURL(url);
-        return document.body.removeChild(a);
+        document.body.removeChild(a);
+        return true;
       };
     }
   ]);
