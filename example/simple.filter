@@ -1,0 +1,20 @@
+Show
+    Class "Amulets" "Active Skill Gems" "Currency" "Hybrid Flasks" "Life Flasks" "Mana Flasks" "Map Fragments" "Maps" "Microtransactions" "Rings" "Support Skill Gems" "Quest Items" "Utility Flasks"
+Show
+    SocketGroup RGB
+Hide
+    Rarity Normal
+    Quality >= 0
+    Quality <= 14
+    Sockets >= 0
+    Sockets <= 5
+    LinkedSockets >= 0
+    LinkedSockets <= 4
+Hide
+    Rarity Magic
+    Quality >= 0
+    Quality <= 9
+    Sockets >= 0
+    Sockets <= 5
+    LinkedSockets >= 0
+    LinkedSockets <= 4
