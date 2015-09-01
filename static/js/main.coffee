@@ -275,17 +275,15 @@ app.controller 'CreatorController', ['$scope', '$modal', ($scope, $modal) ->
     $scope.result = $scope.generate()
   , true)
   $scope.download = () ->
-    a = document.createElement "a"
-    document.body.appendChild a
-    a.style = "display: none"
-    a.target = '_blank'
+    a = document.getElementById "plf-download"
     blob = new Blob([$scope.result], {type: 'text/plain'})
     url = window.URL.createObjectURL(blob)
     a.href = url
-    a.download = 'loot-filter.filter'
     a.click()
-    window.URL.revokeObjectURL url
-    document.body.removeChild a
+    setTimeout () ->
+      window.URL.revokeObjectURL url
+      a.href = null
+    , 5000
     return true
 ]
 

@@ -318,19 +318,17 @@
       }, true);
       return $scope.download = function() {
         var a, blob, url;
-        a = document.createElement("a");
-        document.body.appendChild(a);
-        a.style = "display: none";
-        a.target = '_blank';
+        a = document.getElementById("plf-download");
         blob = new Blob([$scope.result], {
           type: 'text/plain'
         });
         url = window.URL.createObjectURL(blob);
         a.href = url;
-        a.download = 'loot-filter.filter';
         a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
+        setTimeout(function() {
+          window.URL.revokeObjectURL(url);
+          return a.href = null;
+        }, 5000);
         return true;
       };
     }
